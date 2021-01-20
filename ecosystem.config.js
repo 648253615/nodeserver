@@ -17,6 +17,7 @@ module.exports = {
 			ref: 'origin/master',
 			repo: 'git@github.com:648253615/nodeserver.git',
 			path: '/home/nodeserver',
+			'ssh_options': 'StrictHostKeyChecking=no',
 			'post-deploy': 'npm install && pm2 reload ecosystem.config.js --env production'
 		}
 	}

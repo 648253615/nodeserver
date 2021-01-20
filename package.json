@@ -21,7 +21,9 @@
 		"start": "pm2 start ecosystem.config.js --env production",
 		"reload": "pm2 reload ecosystem.config.js --env production",
 		"stop": "pm2 stop ecosystem.config.js",
-		"delete": "pm2 delete ecosystem.config.js"
+		"delete": "pm2 delete ecosystem.config.js",
+		"deploy-setup": "pm2 deploy ecosystem.config.js production setup",
+		"deploy-update": "pm2 deploy ecosystem.config.js production update"
 	},
 	"author": "648253615 <648253615@qq.com>",
 	"license": "MIT"
