@@ -14,10 +14,9 @@ module.exports = {
 		production: {
 			user: 'root',
 			host: '172.81.254.177',
-			ref: 'origin/master',
+			ref: 'origin/main',
 			repo: 'git@github.com:648253615/nodeserver.git',
 			path: '/home/nodeserver',
-			'ssh_options': 'StrictHostKeyChecking=no',
 			'post-deploy': 'npm install && pm2 reload ecosystem.config.js --env production'
 		}
 	}
