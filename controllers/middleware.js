@@ -63,7 +63,7 @@ module.exports = new class Middleware {
 
 	createToken(req, res, next) {
 		req.createToken = (user) => {
-			const tokenExpired = Date.now() + 7 * 86400000
+			const tokenExpired = Date.now() + 3 * 86400000
 			const token = jwt.sign(user, 'nodeserver', {
 				expiresIn: tokenExpired
 			})

@@ -9,7 +9,7 @@ schedule.scheduleJob('0 0 1 * * ?', async () => {
 			expires_date: {
 				$lt: Date.now()
 			}
-		})
+		}, 'path')
 		const ids = []
 		files.map((file) => {
 			ids.push(file._id)

@@ -17,7 +17,8 @@ module.exports = winston.createLogger({
 			dirname: path.join(__dirname, 'logs'),
 			filename: 'winston.log.%DATE%',
 			datePattern: 'YYYY-MM-DD',
-			zippedArchive: true
+			zippedArchive: true,
+			maxFiles: '14d'
 		})
 	]
 })
