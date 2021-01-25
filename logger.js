@@ -1,29 +1,23 @@
 const path = require('path')
-const {
-	createLogger,
-	transports,
-	format
-} = require('winston')
-const {
-	combine,
-	timestamp,
-	errors,
-	prettyPrint
-} = format
+const winston = require('winston')
+require('winston-daily-rotate-file')
 
-module.exports = createLogger({
-	format: combine(
-		timestamp({
+module.exports = winston.createLogger({
+	format: winston.format.combine(
+		winston.format.timestamp({
 			format: 'YYYY-MM-DD HH:mm:ss'
 		}),
-		errors({
+		winston.format.errors({
 			stack: true
 		}),
-		prettyPrint()
+		winston.format.prettyPrint()
 	),
 	transports: [
-		new transports.File({
-			filename: path.join(__dirname, 'logger.log')
+		new winston.transports.DailyRotateFile({
+			dirname: path.join(__dirname, 'logs'),
+			filename: 'winston.log.%DATE%',
+			datePattern: 'YYYY-MM-DD',
+			zippedArchive: true
 		})
 	]
 })

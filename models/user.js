@@ -11,7 +11,13 @@ const User = new Schema({
 	},
 	password: {
 		type: String,
-		set: (v) => crypto.createHash('md5').update(v).digest('hex')
+		required: true,
+		trim: true,
+		set: v => crypto.createHash('md5').update(v).digest('hex')
+	},
+	avatar: {
+		type: String,
+		trim: true
 	},
 	gender: {
 		type: Number,
@@ -22,10 +28,6 @@ const User = new Schema({
 		type: Number,
 		enum: [0, 1, 2, 3],
 		default: 0
-	},
-	avatar: {
-		type: String,
-		trim: true
 	},
 	role: {
 		type: [String]

@@ -1,38 +1,8 @@
 const path = require('path')
 const User = require('../models/user')
-const File = require('../models/file')
+const Role = require('../models/role')
 
 module.exports = new class Controller {
-	async upload(req, res) {
-		try {
-			req.upload(req, res, (err) => {
-				const files = []
-				const dir = path.join(__dirname, '../public')
-				req.files.map((file) => {
-					files.push({
-						name: file.originalname,
-						size: file.size,
-						type: file.mimetype,
-						path: file.path,
-						url: file.path.replace(dir, req.headers.origin),
-						expires_date: Date.now() + 3 * 86400000
-					})
-				})
-				File.create(files)
-				res.send({
-					files,
-					code: 0,
-					message: ''
-				})
-			})
-		} catch (err) {
-			res.send({
-				code: err.code,
-				message: err.message
-			})
-		}
-	}
-
 	async register(req, res) {
 		try {
 			const {
@@ -41,25 +11,18 @@ module.exports = new class Controller {
 			} = req.body
 			const hasAdmin = await User.countDocuments({
 				role: {
-					$in: ['admin']
+					$in: ['ADMIN']
 				}
 			})
-			if (hasAdmin) throw new Error('USER_INVALID')
-			const user = await User.create({
+			await User.create({
 				username,
 				password,
-				role: ['admin']
+				role: [hasAdmin ? 'USER' : 'ADMIN']
 			})
-			const auth = req.createToken(user.toJSON())
-			const obj = {
+			res.send({
 				code: 0,
-				message: '',
-				uid: user._id,
-				token: auth.token,
-				tokenExpired: auth.tokenExpired
-			}
-			req.session.token = auth.token
-			res.send(obj)
+				message: '注册成功'
+			})
 		} catch (err) {
 			res.send({
 				code: err.code,
@@ -74,22 +37,27 @@ module.exports = new class Controller {
 				username,
 				password
 			} = req.body
-			const user = await User.findOne({
+			const user = (await User.findOne({
 				username,
 				password
-			})
+			}, '-password')).toJSON()
+
 			if (!user) throw new Error('USER_INVALID')
-			const auth = req.createToken(user.toJSON())
-			const obj = {
+			const role = await Role.find({
+				role_id: {
+					$in: user.role
+				}
+			}, 'permission')
+			if (role.length) user.permissions = role.reduce((x, y) => y.permission.concat(x.permission))
+			const auth = req.createToken(user)
+			req.session.token = auth.token
+			res.send({
 				code: 0,
-				message: '',
-				uid: user._id,
+				message: '登陆成功',
 				userInfo: user,
 				token: auth.token,
 				tokenExpired: auth.tokenExpired
-			}
-			req.session.token = auth.token
-			res.send(obj)
+			})
 		} catch (err) {
 			res.send({
 				code: err.code,
@@ -100,6 +68,9 @@ module.exports = new class Controller {
 
 	async logout(req, res) {
 		req.session.destroy()
-		res.redirect('/')
+		res.send({
+			code: 0,
+			message: '注销成功'
+		})
 	}
 }

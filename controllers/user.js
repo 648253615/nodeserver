@@ -1,38 +1,22 @@
 const User = require('../models/user')
+const Role = require('../models/role')
+const File = require('../models/file')
+const Permission = require('../models/permission')
 
 module.exports = new class Controller {
 	async list(req, res) {
 		try {
 			const {
-				keyword,
-				limit = 10,
+				limit,
 				skip = 0
 			} = req.query
-			const where = {}
-			if (keyword) where.username = new RegExp(keyword, 'i')
-			const count = await User.countDocuments(where)
-			const users = await User.find(where, '-password').sort('-_id').limit(parseInt(limit)).skip(skip * limit)
+			const count = await User.countDocuments()
+			const users = await User.find({}, '-password').sort('-_id').skip(skip * limit).limit(parseInt(limit))
 			res.send({
 				count,
 				users,
 				code: 0,
-				message: ''
-			})
-		} catch (err) {
-			res.send({
-				code: err.code,
-				message: err.message
-			})
-		}
-	}
-
-	async create(req, res) {
-		try {
-			const create = req.body
-			await User.create(create)
-			res.send({
-				code: 0,
-				message: '',
+				message: '用户查询成功'
 			})
 		} catch (err) {
 			res.send({
@@ -45,11 +29,49 @@ module.exports = new class Controller {
 	async detail(req, res) {
 		try {
 			const id = req.params.id
-			const detail = await User.findById(id)
+			const user = (await User.findById(id, '-password')).toJSON()
+			const role = await Role.find({
+				role_id: {
+					$in: user.role
+				}
+			}, 'permission')
+			user.permissions = role.reduce((y, x) => x.permission.concat(y.permission))
 			res.send({
-				detail,
+				user,
 				code: 0,
-				message: ''
+				message: '用户查询成功'
+			})
+		} catch (err) {
+			res.send({
+				code: err.code,
+				message: err.message
+			})
+		}
+	}
+
+	async create(req, res) {
+		try {
+			const {
+				username,
+				password,
+				avatar,
+				gender,
+				status,
+				role,
+				comment
+			} = req.body
+			await User.create({
+				username,
+				password,
+				avatar,
+				gender,
+				status,
+				role,
+				comment
+			})
+			res.send({
+				code: 0,
+				message: '用户创建成功'
 			})
 		} catch (err) {
 			res.send({
@@ -62,11 +84,27 @@ module.exports = new class Controller {
 	async update(req, res) {
 		try {
 			const id = req.params.id
-			const update = req.body
-			await User.findByIdAndUpdate(id, update)
+			const {
+				avatar,
+				gender,
+				status,
+				role,
+				comment,
+				password
+			} = req.body
+			const user = await User.findByIdAndUpdate(id, {
+				avatar,
+				gender,
+				status,
+				role,
+				comment,
+				[password ? 'password' : '']: password
+			})
+			req.updateFile(avatar, null)
+			if (user && user.avatar !== avatar) req.updateFile(user.avatar, Date.now())
 			res.send({
 				code: 0,
-				message: '',
+				message: '用户更新成功'
 			})
 		} catch (err) {
 			res.send({
@@ -79,10 +117,11 @@ module.exports = new class Controller {
 	async remove(req, res) {
 		try {
 			const id = req.params.id
-			await User.findByIdAndDelete(id)
+			const user = await User.findByIdAndDelete(id)
+			if (user && user.avatar) req.updateFile(user.avatar, Date.now())
 			res.send({
 				code: 0,
-				message: '',
+				message: '用户删除成功'
 			})
 		} catch (err) {
 			res.send({

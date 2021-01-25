@@ -7,8 +7,8 @@ const MongoStore = require('connect-mongo')(session)
 const controllers = require('./controllers')
 const mongoose = require('./models')
 const logger = require('./logger')
-const schedule = require('./schedule')
 const app = express()
+require('./schedule')
 
 app.use(cors())
 app.use(express.static(path.join(__dirname, 'public')))
@@ -23,7 +23,7 @@ app.use(session({
 	secret: 'nodeserver',
 	store: new MongoStore({
 		mongooseConnection: mongoose.connection,
-		ttl: 24 * 3600
+		ttl: 86400
 	})
 }))
 

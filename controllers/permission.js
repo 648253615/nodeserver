@@ -4,18 +4,16 @@ module.exports = new class Controller {
 	async list(req, res) {
 		try {
 			const {
-				keyword,
-				limit = 10,
+				limit,
 				skip = 0
 			} = req.query
-			const where = {}
-			const count = await Permission.countDocuments(where)
-			const permissions = await Permission.find(where).sort('-_id').limit(parseInt(limit)).skip(skip * limit)
+			const count = await Permission.countDocuments()
+			const permissions = await Permission.find().sort('-_id').skip(skip * limit).limit(parseInt(limit))
 			res.send({
 				count,
 				permissions,
 				code: 0,
-				message: ''
+				message: '权限查询成功'
 			})
 		} catch (err) {
 			res.send({
@@ -27,28 +25,19 @@ module.exports = new class Controller {
 
 	async create(req, res) {
 		try {
-			const create = req.body
-			await Permission.create(create)
+			const {
+				permission_id,
+				permission_name,
+				comment
+			} = req.body
+			await Permission.create({
+				permission_id,
+				permission_name,
+				comment
+			})
 			res.send({
 				code: 0,
-				message: '',
-			})
-		} catch (err) {
-			res.send({
-				code: err.code,
-				message: err.message
-			})
-		}
-	}
-
-	async detail(req, res) {
-		try {
-			const id = req.params.id
-			const detail = await Permission.findById(id)
-			res.send({
-				detail,
-				code: 0,
-				message: ''
+				message: '权限创建成功'
 			})
 		} catch (err) {
 			res.send({
@@ -61,11 +50,17 @@ module.exports = new class Controller {
 	async update(req, res) {
 		try {
 			const id = req.params.id
-			const update = req.body
-			await Permission.findByIdAndUpdate(id, update)
+			const {
+				permission_name,
+				comment
+			} = req.body
+			await Permission.findByIdAndUpdate(id, {
+				permission_name,
+				comment
+			})
 			res.send({
 				code: 0,
-				message: '',
+				message: '权限更新成功'
 			})
 		} catch (err) {
 			res.send({
@@ -81,7 +76,7 @@ module.exports = new class Controller {
 			await Permission.findByIdAndDelete(id)
 			res.send({
 				code: 0,
-				message: '',
+				message: '权限删除成功'
 			})
 		} catch (err) {
 			res.send({
